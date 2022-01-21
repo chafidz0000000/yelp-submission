@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  json2csv:
+    restart: "no"
+    image: chafidz0000000/json2csv_python:v1
+    build: 
+      context: ./python
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/data:rw
+    deploy:
+      resources:
+        reservations:
+          cpus: "1" # Just want to make sure it went full-throtle with single thread
+          memory: 300m
+  database:
+    depends_on:
+      - json2csv
+    restart: always
+    image: postgres:14.1-alpine
+    ports:
+      - 5432:5432/TCP
+    volumes:
+      - ./data:/data:ro
+      - ./db_init:/docker-entrypoint-initdb.d:ro
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=yelp
+      - POSTGRES_USER=something
+      - POSTGRES_PASSWORD=something
+    command: >
+      -c max_wal_size=1GB
+    networks:
+      local_network:
+
+networks:
+  local_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.255.255.0/24"
+
+volumes:
+  db_data:

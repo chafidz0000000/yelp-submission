@@ -1,0 +1,9 @@
+#!/bin/sh
+
+for JSON_DATA in $(ls /data/*.json);do
+    if [ -f "${JSON_DATA}" ];then
+        python /python/Json2CSV.py ${JSON_DATA}
+        gzip ${JSON_DATA}
+    fi
+done
+exit 0
